@@ -36,10 +36,11 @@ public class StudentDashboard extends JFrame {
         mainPanel.setLayout(new GridBagLayout()); // Center components
         mainPanel.setOpaque(false);
 
-        // Create the content panel with rounded borders and a semi-transparent background
+        // Create the content panel with rounded borders and a semi-transparent
+        // background
         JPanel contentPanel = new JPanel();
-        contentPanel.setPreferredSize(new Dimension(width - 200, height - 200));
-        contentPanel.setBackground(new Color(255, 255, 255, 200)); // semi-transparent background
+        contentPanel.setPreferredSize(new Dimension(width - 300, height - 200));
+        contentPanel.setBackground(new Color(255, 255, 255, 255)); // semi-transparent background
         contentPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2, true)); // Rounded border
         contentPanel.setLayout(new GridBagLayout());
 
@@ -54,6 +55,8 @@ public class StudentDashboard extends JFrame {
         remarksArea.setLineWrap(true);
         remarksArea.setWrapStyleWord(true);
         remarksArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        remarksArea.setBackground(new Color(211, 211, 211)); // Light grey background
+        remarksArea.setForeground(Color.BLACK); // Black text color (default)
 
         applyButton.addActionListener(e -> applyForResearchPractice());
         checkStatusButton.addActionListener(e -> checkApplicationStatus());
@@ -66,35 +69,36 @@ public class StudentDashboard extends JFrame {
         // GridBag layout settings for arranging components
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        // Place components in grid
         gbc.gridx = 0;
         gbc.gridy = 0;
         contentPanel.add(new JLabel("Select Faculty:"), gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 0;
         contentPanel.add(facultyComboBox, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
-        contentPanel.add(new JLabel("Remarks:"), gbc);
+        contentPanel.add(new JLabel("Statement of purpose"), gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 1;
         contentPanel.add(new JScrollPane(remarksArea), gbc);
 
+        // Arrange buttons in pairs
         gbc.gridx = 0;
         gbc.gridy = 2;
-        gbc.gridwidth = 2;
         contentPanel.add(applyButton, gbc);
 
-        gbc.gridy = 3;
+        gbc.gridx = 1;
         contentPanel.add(checkStatusButton, gbc);
 
-        gbc.gridy = 4;
+        gbc.gridx = 0;
+        gbc.gridy = 3;
         contentPanel.add(respondToQuestionButton, gbc);
 
-        gbc.gridy = 5;
+        gbc.gridx = 1;
         contentPanel.add(logoutButton, gbc);
 
         // Add the content panel to the main panel
@@ -107,6 +111,10 @@ public class StudentDashboard extends JFrame {
     private JButton createButton(String text) {
         JButton button = new JButton(text);
         button.setFont(new Font("Arial", Font.BOLD, 14));
+        if(text.equalsIgnoreCase("Logout")){
+            button.setBackground(new Color(225, 0, 0));
+        }
+        else
         button.setBackground(new Color(70, 130, 180));
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
@@ -143,13 +151,10 @@ public class StudentDashboard extends JFrame {
                 JOptionPane.showMessageDialog(this, "Application submitted successfully!");
             }
         } catch (SQLException ex) {
-            System.out.println(ex);
-            if ((ex.toString()).contains("Duplicate"));{
+            if ((ex.toString()).contains("Duplicate")) {
                 JOptionPane.showMessageDialog(this, "Application with current professor already exists");
             }
-            
             ex.printStackTrace();
-        
         }
     }
 
@@ -176,7 +181,7 @@ public class StudentDashboard extends JFrame {
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, studentId);
                 ResultSet rs = stmt.executeQuery();
-                
+
                 if (rs.next()) {
                     String followUpQuestion = rs.getString("follow_up_question");
                     JTextArea responseArea = new JTextArea(5, 20);
@@ -189,7 +194,8 @@ public class StudentDashboard extends JFrame {
                     panel.add(new JLabel("Your Response:"), BorderLayout.SOUTH);
                     panel.add(new JScrollPane(responseArea), BorderLayout.SOUTH);
 
-                    int option = JOptionPane.showConfirmDialog(this, panel, "Respond to Follow-up Question", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                    int option = JOptionPane.showConfirmDialog(this, panel, "Respond to Follow-up Question",
+                            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
                     if (option == JOptionPane.OK_OPTION) {
                         String followUpResponse = responseArea.getText();

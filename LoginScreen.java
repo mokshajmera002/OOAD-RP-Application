@@ -8,6 +8,39 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+
+// RoundedButton class definition (for rounded buttons)
+class RoundedButton extends JButton {
+    public RoundedButton(String text) {
+        super(text);
+        setContentAreaFilled(false); // Makes the button's content area transparent
+        setFocusPainted(false); // Remove the focus border
+        setBorderPainted(false); // Remove the border
+        setFont(new Font("Arial", Font.BOLD, 14)); // Set a bold font for the button text
+        setForeground(Color.WHITE); // Set text color
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        if (getModel().isPressed()) {
+            g.setColor(new Color(0, 102, 204)); // Button color when pressed
+        } else if (getModel().isRollover()) {
+            g.setColor(new Color(0, 128, 255)); // Button color when hovered
+        } else {
+            g.setColor(new Color(0, 153, 255)); // Default button color
+        }
+
+        g.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30); // Draw rounded corners
+        super.paintComponent(g); // Draw the button text
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(150, 50); // Set preferred size for the button
+    }
+}
+
+
 public class LoginScreen extends JFrame {
     private JTextField emailField;
     private JPasswordField passwordField;
@@ -24,59 +57,95 @@ public class LoginScreen extends JFrame {
         setSize((int) (screenSize.width * 0.7), (int) (screenSize.height * 0.7));
         setLocationRelativeTo(null); // Center frame on screen
 
-        // Background image
+        // Background image or gradient color
         JLabel background = new JLabel(new ImageIcon("bg.jpg"));
         background.setLayout(new GridBagLayout()); // Set layout manager for the background
 
-        // Create the login panel with a rounded border and padding
-        JPanel loginPanel = new JPanel();
+        // Create login panel with rounded border, padding, and shadow
+        JPanel loginPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(new Color(255, 255, 255, 230)); // Slightly transparent white
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+            }
+        };
         loginPanel.setLayout(new BoxLayout(loginPanel, BoxLayout.Y_AXIS));
         loginPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(20, 20, 20, 20),
-                BorderFactory.createLineBorder(Color.DARK_GRAY, 2, true)
+                BorderFactory.createMatteBorder(2, 2, 10, 10, new Color(200, 200, 200)), // Outer matte border
+                BorderFactory.createEmptyBorder(40, 40, 40, 40) // Inner padding
         ));
-        loginPanel.setBackground(new Color(255, 255, 255, 180)); // Semi-transparent white
 
-        // Add components to the login panel
+        // Apply a shadow effect
+        loginPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(50, 50, 50, 50),
+                BorderFactory.createMatteBorder(3, 3, 3, 3, new Color(0, 0, 0))));
+
+        // Custom font for labels
+        Font labelFont = new Font("SansSerif", Font.PLAIN, 18);
+
+        // Email field
         JLabel emailLabel = new JLabel("Email:");
+        emailLabel.setFont(labelFont);
         emailLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        emailField = new JTextField(20);
+        emailField = new JTextField("", 50);
+        emailField.setForeground(Color.GRAY);
+        emailField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        styleTextField(emailField);
 
+        // Password field
         JLabel passwordLabel = new JLabel("Password:");
+        passwordLabel.setFont(labelFont);
         passwordLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        passwordField = new JPasswordField(20);
+        passwordField = new JPasswordField("", 50);
+        passwordField.setForeground(Color.GRAY);
+        passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        styleTextField(passwordField);
 
+        // User type combo box
         JLabel userTypeLabel = new JLabel("User Type:");
+        userTypeLabel.setFont(labelFont);
         userTypeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        userTypeComboBox = new JComboBox<>(new String[]{"Student", "Faculty"});
+        userTypeComboBox = new JComboBox<>(new String[] { "Student", "Faculty" });
+        styleComboBox(userTypeComboBox);
 
-        loginButton = new JButton("Login");
+        // Login button with rounded corners and shadow
+        loginButton = new RoundedButton("Login");
+        loginButton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        loginButton.setForeground(Color.WHITE);
+        loginButton.setBackground(new Color(70, 130, 180));
         loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String email = emailField.getText();
-                String password = new String(passwordField.getPassword());
-                String userType = (String) userTypeComboBox.getSelectedItem();
-                if (userType.equals("Student")) {
-                    loginAsStudent(email, password);
-                } else {
-                    loginAsFaculty(email, password);
-                }
+        loginButton.setFocusPainted(false);
+        loginButton.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
+        loginButton.addActionListener(e -> {
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
+            String userType = (String) userTypeComboBox.getSelectedItem();
+            // // Implement your login logic here
+            if (userType.equals("Student")) {
+                loginAsStudent(email, password);
+            } else {
+                loginAsFaculty(email, password);
             }
+            // JOptionPane.showMessageDialog(LoginScreen.this, "Logged in as: " + userType);
         });
 
         // Add components to the login panel with spacing
-        loginPanel.add(Box.createVerticalStrut(10));
+        // Add components to the login panel with spacing
         loginPanel.add(emailLabel);
+        loginPanel.add(Box.createVerticalStrut(10));
         loginPanel.add(emailField);
-        loginPanel.add(Box.createVerticalStrut(10));
-        loginPanel.add(passwordLabel);
-        loginPanel.add(passwordField);
-        loginPanel.add(Box.createVerticalStrut(10));
-        loginPanel.add(userTypeLabel);
-        loginPanel.add(userTypeComboBox);
         loginPanel.add(Box.createVerticalStrut(20));
+        loginPanel.add(passwordLabel);
+        loginPanel.add(Box.createVerticalStrut(10));
+        loginPanel.add(passwordField);
+        loginPanel.add(Box.createVerticalStrut(20));
+        loginPanel.add(userTypeLabel);
+        loginPanel.add(Box.createVerticalStrut(10));
+        loginPanel.add(userTypeComboBox);
+        loginPanel.add(Box.createVerticalStrut(30));
         loginPanel.add(loginButton);
 
         // Add the login panel to the background with padding
@@ -84,6 +153,24 @@ public class LoginScreen extends JFrame {
         add(background);
 
         setVisible(true);
+    }
+
+    // Helper method to style JTextFields
+    private void styleTextField(JTextField field) {
+        field.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        field.setAlignmentX(Component.CENTER_ALIGNMENT);
+        field.setOpaque(false);
+    }
+
+    // Helper method to style JComboBox
+    private void styleComboBox(JComboBox<String> comboBox) {
+        comboBox.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        comboBox.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        comboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, comboBox.getPreferredSize().height));
+        comboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 
     private void loginAsStudent(String email, String password) {
