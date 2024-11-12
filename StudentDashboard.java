@@ -143,7 +143,13 @@ public class StudentDashboard extends JFrame {
                 JOptionPane.showMessageDialog(this, "Application submitted successfully!");
             }
         } catch (SQLException ex) {
+            System.out.println(ex);
+            if ((ex.toString()).contains("Duplicate"));{
+                JOptionPane.showMessageDialog(this, "Application with current professor already exists");
+            }
+            
             ex.printStackTrace();
+        
         }
     }
 
