@@ -5,11 +5,12 @@ import java.sql.*;
 
 public class StudentDashboard extends JFrame {
     private int studentId;
-    private JButton applyButton, checkStatusButton, logoutButton, respondToQuestionButton;
+    private JButton applyButton, checkStatusButton, logoutButton, respondToQuestionButton, checkDomain;
     private JTextArea remarksArea;
     private JComboBox<String> facultyComboBox;
     private JPanel mainPanel;
 
+    @SuppressWarnings("unused")
     public StudentDashboard(int studentId) {
         this.studentId = studentId;
 
@@ -50,6 +51,7 @@ public class StudentDashboard extends JFrame {
         checkStatusButton = createButton("Check Application Status");
         logoutButton = createButton("Logout");
         respondToQuestionButton = createButton("Respond to Follow-up");
+        checkDomain = createButton("Faculty Domain/Current Projects");
 
         remarksArea = new JTextArea(5, 20);
         remarksArea.setLineWrap(true);
@@ -62,6 +64,7 @@ public class StudentDashboard extends JFrame {
         checkStatusButton.addActionListener(e -> checkApplicationStatus());
         logoutButton.addActionListener(e -> dispose()); // Close application on logout
         respondToQuestionButton.addActionListener(e -> showFollowUpQuestionDialog());
+        checkDomain.addActionListener(e -> domainDialog());
 
         // Load faculty data
         loadFaculties();
@@ -87,6 +90,7 @@ public class StudentDashboard extends JFrame {
         contentPanel.add(new JScrollPane(remarksArea), gbc);
 
         // Arrange buttons in pairs
+        // Arrange buttons in pairs
         gbc.gridx = 0;
         gbc.gridy = 2;
         contentPanel.add(applyButton, gbc);
@@ -99,6 +103,12 @@ public class StudentDashboard extends JFrame {
         contentPanel.add(respondToQuestionButton, gbc);
 
         gbc.gridx = 1;
+        contentPanel.add(checkDomain, gbc);
+        
+
+        // Add the checkDomain button
+        gbc.gridx = 0; // First column
+        gbc.gridy = 4; // Next row
         contentPanel.add(logoutButton, gbc);
 
         // Add the content panel to the main panel
@@ -111,11 +121,10 @@ public class StudentDashboard extends JFrame {
     private JButton createButton(String text) {
         JButton button = new JButton(text);
         button.setFont(new Font("Arial", Font.BOLD, 14));
-        if(text.equalsIgnoreCase("Logout")){
+        if (text.equalsIgnoreCase("Logout")) {
             button.setBackground(new Color(225, 0, 0));
-        }
-        else
-        button.setBackground(new Color(70, 130, 180));
+        } else
+            button.setBackground(new Color(70, 130, 180));
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
@@ -207,6 +216,34 @@ public class StudentDashboard extends JFrame {
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
+        }
+    }
+
+    private void domainDialog() {
+        try (Connection conn = DBConnection.getConnection()) {
+            int facultyId = facultyComboBox.getSelectedIndex() + 1; // Ensure this maps correctly
+            String sql = "SELECT domain FROM faculties WHERE faculty_id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, facultyId);
+                // stmt.set(1, facultyId);
+                ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    String domain = rs.getString("domain");
+                    System.out.println(rs.toString());
+
+                    // Display the domain in a dialog box
+                    JOptionPane.showMessageDialog(this, "Domain: " + facultyId+ domain, "Faculty Domain",
+                            JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "No domain information found for the selected faculty.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "An error occurred while fetching domain information.", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
