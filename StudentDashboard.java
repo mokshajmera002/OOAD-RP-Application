@@ -232,9 +232,25 @@ public class StudentDashboard extends JFrame {
                     String domain = rs.getString("domain");
                     System.out.println(rs.toString());
 
+
+                    JPanel panel = new JPanel(new BorderLayout());
+                    JTextArea textArea = new JTextArea(5, 30); // 5 rows, 30 columns as an example size
+                    textArea.setText(domain);
+                    textArea.setLineWrap(true);
+                    textArea.setWrapStyleWord(true);
+                    textArea.setEditable(false);
+                    textArea.setFont(new Font("Arial", Font.PLAIN, 12));
+                    textArea.setBackground(new Color(255, 255, 255)); // light grey background for better readability
+
+                    panel.add(new JScrollPane(textArea), BorderLayout.CENTER);
+
+                    // Show the JPanel with JTextArea inside a dialog (or you can add it to your
+                    // main panel)
+                    JOptionPane.showMessageDialog(null, panel, "Domain/current projects", JOptionPane.PLAIN_MESSAGE);
+                
+
                     // Display the domain in a dialog box
-                    JOptionPane.showMessageDialog(this, "Domain: " + facultyId+ domain, "Faculty Domain",
-                            JOptionPane.INFORMATION_MESSAGE);
+                    
                 } else {
                     JOptionPane.showMessageDialog(this, "No domain information found for the selected faculty.",
                             "Error", JOptionPane.ERROR_MESSAGE);
